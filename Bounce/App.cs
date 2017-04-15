@@ -9,6 +9,8 @@ namespace Bounce
 
 	public class App : Application
 	{
+		public const int PTM_RATIO = 64;
+
 		private MasterDetailPage _rootPage = null;
 		private PlayPage _playPage = null;
 		private BallsPage _ballsPage = null;

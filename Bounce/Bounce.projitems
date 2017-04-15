@@ -16,9 +16,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\ItemTapListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pages\PlayPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pages\BallsPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Box2DDebug.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\ContactListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\GameLayer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\CCPhysicsSprite.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />
     <Folder Include="$(MSBuildThisFileDirectory)Pages\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\" />
   </ItemGroup>
 </Project>
