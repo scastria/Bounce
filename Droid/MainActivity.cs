@@ -9,6 +9,7 @@ using Android.Widget;
 using Android.OS;
 using Xamarin.Forms.Platform.Android;
 using Xamarin.Forms;
+using Plugin.Permissions;
 
 namespace Bounce.Droid
 {
@@ -25,6 +26,11 @@ namespace Bounce.Droid
 			Forms.Init(this, bundle);
 
 			LoadApplication(new App());
+		}
+
+		public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+		{
+			PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 		}
 	}
 }

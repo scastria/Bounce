@@ -10,14 +10,6 @@ namespace Bounce.Pages
 	{
 		private App App { get { return ((App)Application.Current); } }
 
-		private Command<MenuItem> _itemTappedCommand = null;
-		public ICommand ItemTappedCommand {
-			get {
-				_itemTappedCommand = _itemTappedCommand ?? new Command<MenuItem>(DoItemTappedCommand);
-				return (_itemTappedCommand);
-			}
-		}
-
 		public MenuPage()
 		{
 			BindingContext = this;
@@ -30,7 +22,7 @@ namespace Bounce.Pages
 			DataTemplate it = new DataTemplate(typeof(TextCell));
 			it.SetBinding(TextCell.TextProperty, "Title");
 			it.SetValue(TextCell.TextColorProperty, AppStyle.Menu.ITEM_TEXT_COLOR);
-			ItemTapListView listV = new ItemTapListView {
+			ListView listV = new ListView {
 				BackgroundColor = AppStyle.Menu.LIST_BACKGROUND_COLOR,
 				ItemsSource = menuItems,
 				ItemTemplate = it,
@@ -38,18 +30,11 @@ namespace Bounce.Pages
 					BackgroundColor = AppStyle.Menu.LIST_BACKGROUND_COLOR
 				}
 			};
+			listV.ItemTapped += (object sender, ItemTappedEventArgs e) => {
+				App.SetDetailPage(((MenuItem)e.Item).Type);
+				listV.SelectedItem = null;
+			};
 			Content = listV;
-			//Bindings
-			listV.SetBinding(ItemTapListView.ItemTapCommandProperty, nameof(MenuPage.ItemTappedCommand));
-		}
-
-		private void DoItemTappedCommand(MenuItem selectedItem)
-		{
-			switch (selectedItem.Type) {
-			default:
-				App.SetDetailPage(selectedItem.Type);
-				break;
-			}
 		}
 	}
 

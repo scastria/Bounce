@@ -215,7 +215,9 @@ namespace Bounce.Game
 			physBody.CreateFixture(fd);
 			_contactListener.Ball = physBody;
 
-			_ballN = new CCPhysicsSprite("soccer", physBody) {
+			//byte[] picData = Plugin.EmbeddedResource.ResourceLoader.GetEmbeddedResourceBytes(this.GetType().Assembly, "menu.png");
+			CCTexture2D ballTex = new CCTexture2D("soccer");
+			_ballN = new CCPhysicsSprite(ballTex, physBody) {
 				PositionX = ballCenterX,
 				PositionY = ballCenterY,
 				ContentSize = new CCSize(ballDiameter, ballDiameter)

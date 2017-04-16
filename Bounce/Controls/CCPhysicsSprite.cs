@@ -11,7 +11,7 @@ namespace Bounce.Controls
 
 		public b2Body PhysBody { get; private set; }
 
-		public CCPhysicsSprite(string fileName,b2Body physBody) : base(fileName)
+		public CCPhysicsSprite(CCTexture2D fileName,b2Body physBody) : base(fileName)
 		{
 			PhysBody = physBody;
 		}
