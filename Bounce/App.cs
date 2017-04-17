@@ -14,7 +14,6 @@ namespace Bounce
 		public string BallFilename { get; set; }
 
 		private MasterDetailPage _rootPage = null;
-		private PlayPage _playPage = null;
 		private BallsPage _ballsPage = null;
 
 		public App()
@@ -33,9 +32,8 @@ namespace Bounce
 			ContentPage detailPage = null;
 			switch (type) {
 			case MenuItemType.Play:
-				if (_playPage == null)
-					_playPage = new PlayPage();
-				detailPage = _playPage;
+				//Create new PlayPage each time in case ball image has changed
+				detailPage = new PlayPage();
 				break;
 			default:
 				if (_ballsPage == null)

@@ -86,6 +86,7 @@ namespace Bounce.Pages
 					selItem.IsSelected = true;
 				}
 				listV.SelectedItem = null;
+				App.SetDetailPage(MenuItemType.Play);
 			};
 			Content = listV;
 		}

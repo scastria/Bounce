@@ -5,6 +5,8 @@ using Box2D.Common;
 using Box2D.Dynamics;
 using CocosSharp;
 using Bounce.Controls;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Bounce.Game
 {
@@ -38,6 +40,7 @@ namespace Bounce.Game
 			}
 		}
 
+		private byte[] _ballData = null;
 		private float _gameWidth;
 		private float _gameHeight;
 		private CCPhysicsSprite _ballN = null;
@@ -52,8 +55,9 @@ namespace Bounce.Game
 		private ContactListener _contactListener = null;
 		private bool _stopGameRequested = false;
 
-		public GameLayer(float gameWidth, float gameHeight) : base(new CCColor4B(249, 247, 233))
+		public GameLayer(byte[] ballData, float gameWidth, float gameHeight) : base(new CCColor4B(249, 247, 233))
 		{
+			_ballData = ballData;
 			_gameWidth = gameWidth;
 			_gameHeight = gameHeight;
 
@@ -88,7 +92,7 @@ namespace Bounce.Game
 			floorBody.SetActive(true);
 
 			b2EdgeShape floorShape = new b2EdgeShape();
-			floorShape.Set(b2Vec2.Zero, new b2Vec2(_gameWidth / App.PTM_RATIO,0));
+			floorShape.Set(b2Vec2.Zero, new b2Vec2(_gameWidth / App.PTM_RATIO, 0));
 
 			b2FixtureDef floorFixture = new b2FixtureDef();
 			floorFixture.friction = WALL_FRICTION;
@@ -215,8 +219,11 @@ namespace Bounce.Game
 			physBody.CreateFixture(fd);
 			_contactListener.Ball = physBody;
 
-			//byte[] picData = Plugin.EmbeddedResource.ResourceLoader.GetEmbeddedResourceBytes(this.GetType().Assembly, "menu.png");
-			CCTexture2D ballTex = new CCTexture2D("soccer");
+			CCTexture2D ballTex = null;
+			if (_ballData == null)
+				ballTex = new CCTexture2D("soccer");
+			else
+				ballTex = new CCTexture2D(_ballData);
 			_ballN = new CCPhysicsSprite(ballTex, physBody) {
 				PositionX = ballCenterX,
 				PositionY = ballCenterY,
@@ -278,21 +285,6 @@ namespace Bounce.Game
 				float physTouchY = touches[0].Location.Y / App.PTM_RATIO;
 				//Check touch ball
 				bool hitBall = _ballN.PhysBody.FixtureList.TestPoint(new b2Vec2(physTouchX, physTouchY));
-				//if (!hitBall) {
-					//Console.WriteLine("Raw touch: (" + touches[0].Location.X + "," + touches[0].Location.Y + ")");
-					//Console.WriteLine("Shape center: (" + _ballN.PositionX + "," + _ballN.PositionY + ")");
-					//Console.WriteLine("Shape Radius: " + _ballN.ContentSize.Width / 2);
-					//float squareDistance = (touches[0].Location.X - _ballN.PositionX) * (touches[0].Location.X - _ballN.PositionX) + (touches[0].Location.Y - _ballN.PositionY) * (touches[0].Location.Y - _ballN.PositionY);
-					//float squareRadius = (_ballN.ContentSize.Width / 2) * (_ballN.ContentSize.Width / 2);
-					//Console.WriteLine("Hit Shape: " + (squareDistance <= squareRadius));
-
-					//Console.WriteLine("Physics touch: (" + physTouchX + "," + physTouchY + ")");
-					//Console.WriteLine("Physics center: (" + _ballN.PhysBody.Position.x + "," + _ballN.PhysBody.Position.y + ")");
-					//Console.WriteLine("Physics Radius: " + _ballN.PhysBody.FixtureList.Shape.Radius);
-					//squareDistance = (physTouchX - _ballN.PhysBody.Position.x) * (physTouchX - _ballN.PhysBody.Position.x) + (physTouchY - _ballN.PhysBody.Position.y) * (physTouchY - _ballN.PhysBody.Position.y);
-					//squareRadius = (_ballN.PhysBody.FixtureList.Shape.Radius) * (_ballN.PhysBody.FixtureList.Shape.Radius);
-					//Console.WriteLine("Hit Physics: " + (squareDistance <= squareRadius));
-				//}
 				if (_isGameOver && hitBall)
 					StartGame();
 				if (hitBall) {

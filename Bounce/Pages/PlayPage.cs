@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using CocosSharp;
 using Xamarin.Forms;
 
@@ -7,6 +8,8 @@ namespace Bounce.Pages
 {
 	public class PlayPage : ContentPage
 	{
+		private App App { get { return ((App)Application.Current); } }
+
 		private CCGameView _nativeGameV = null;
 		private CocosSharpView _formsGameV = null;
 
@@ -33,7 +36,7 @@ namespace Bounce.Pages
 				_formsGameV.Paused = false;
 		}
 
-		private void LoadGame(object sender, EventArgs ea)
+		private async void LoadGame(object sender, EventArgs ea)
 		{
 			_nativeGameV = sender as CCGameView;
 
@@ -44,7 +47,16 @@ namespace Bounce.Pages
 				_nativeGameV.ResolutionPolicy = CCViewResolutionPolicy.ShowAll;
 				_nativeGameV.ContentManager.SearchPaths = new List<string> { "Fonts", "Sounds", "Images", "Animations" };
 				CCScene gameScene = new CCScene(_nativeGameV);
-				gameScene.AddLayer(new Bounce.Game.GameLayer(_nativeGameV.DesignResolution.Width, _nativeGameV.DesignResolution.Height));
+				byte[] ballData = null;
+				if (!string.IsNullOrWhiteSpace(App.BallFilename)) {
+					using (FileStream fs = new FileStream(App.BallFilename, FileMode.Open)) {
+						using (MemoryStream ms = new MemoryStream()) {
+							await fs.CopyToAsync(ms);
+							ballData = ms.ToArray();
+						}
+					}
+				}
+				gameScene.AddLayer(new Game.GameLayer(ballData,_nativeGameV.DesignResolution.Width, _nativeGameV.DesignResolution.Height));
 				_nativeGameV.RunWithScene(gameScene);
 			}
 		}

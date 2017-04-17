@@ -169,12 +169,10 @@
     <Compile Include="AppDelegate.cs" />
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="Resources\menu.png" />
     <BundleResource Include="Resources\menu%402x.png" />
     <BundleResource Include="Resources\menu%403x.png" />
     <BundleResource Include="Content\Fonts\Roboto-Regular.ttf" />
     <BundleResource Include="Content\Images\soccer.png" />
-    <BundleResource Include="Resources\soccer.png" />
     <BundleResource Include="Resources\row_check.png" />
     <BundleResource Include="Resources\row_check%402x.png" />
     <BundleResource Include="Resources\row_check%403x.png" />
@@ -184,6 +182,7 @@
     <BundleResource Include="Resources\camera.png" />
     <BundleResource Include="Resources\camera%402x.png" />
     <BundleResource Include="Resources\camera%403x.png" />
+    <BundleResource Include="Resources\menu.png" />
   </ItemGroup>
   <Import Project="..\Bounce\Bounce.projitems" Label="Shared" Condition="Exists('..\Bounce\Bounce.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
