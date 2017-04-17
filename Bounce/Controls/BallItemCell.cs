@@ -14,8 +14,6 @@ namespace Bounce.Controls
 				VerticalOptions = LayoutOptions.Center
 			};
 			Image checkI = new Image {
-				Source = "row_check",
-				IsVisible = false,
 				VerticalOptions = LayoutOptions.Center
 			};
 			Grid mainG = new Grid {
@@ -30,7 +28,7 @@ namespace Bounce.Controls
 			View = mainG;
 			//Bindings
 			ballI.SetBinding(Image.SourceProperty, nameof(BallItem.Filename), converter: new FilenameImageValueConverter());
-			checkI.SetBinding(Image.IsVisibleProperty, nameof(BallItem.IsSelected));
+			checkI.SetBinding(Image.SourceProperty, nameof(BallItem.IsSelected), converter: new CheckImageValueConverter());
 		}
 	}
 }

@@ -11,6 +11,8 @@ namespace Bounce
 	{
 		public const int PTM_RATIO = 64;
 
+		public string BallFilename { get; set; }
+
 		private MasterDetailPage _rootPage = null;
 		private PlayPage _playPage = null;
 		private BallsPage _ballsPage = null;

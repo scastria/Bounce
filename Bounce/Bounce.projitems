@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\CCPhysicsSprite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\BallItemCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\FilenameImageValueConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Converters\CheckImageValueConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />

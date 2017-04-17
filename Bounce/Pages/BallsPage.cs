@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Bounce.Controls;
 using Plugin.Media;
@@ -12,6 +16,12 @@ namespace Bounce.Pages
 	{
 		private const string TAKE_PHOTO = "Take a photo";
 		private const string CHOOSE_PHOTO = "Choose a photo";
+		private const string BALLS_DIR = "Balls";
+
+		private App App { get { return ((App)Application.Current); } }
+
+		private string _ballsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), BALLS_DIR);
+		private ObservableCollection<BallItem> _ballItems = null;
 
 		public BallsPage()
 		{
@@ -37,31 +47,68 @@ namespace Bounce.Pages
 						return;
 					}
 					MediaFile pickPhoto = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions { PhotoSize = PhotoSize.Medium });
-					Console.WriteLine(pickPhoto.Path);
+					Console.WriteLine(_ballsDir);
+					Directory.CreateDirectory(_ballsDir);
+					string ballFilename = Path.Combine(_ballsDir, Guid.NewGuid().ToString());
+					using(Stream pickPhotoS = pickPhoto.GetStream()) {
+						using (FileStream fs = new FileStream(ballFilename, FileMode.CreateNew)) {
+							await pickPhotoS.CopyToAsync(fs);
+						}
+					}
+					_ballItems.Add(new BallItem { Filename = ballFilename });
 				}
 			};
 			ToolbarItems.Add(cameraTBI);
 			BackgroundColor = AppStyle.Balls.BACKGROUND_COLOR;
-			List<BallItem> ballItems = new List<BallItem> {
-				new BallItem { IsSelected = true },
-			};
+			_ballItems = new ObservableCollection<BallItem>();
+			_ballItems.Add(new BallItem { IsSelected = string.IsNullOrWhiteSpace(App.BallFilename) });
+			foreach (string ballFile in Directory.GetFiles(_ballsDir)) {
+				string ballFilename = Path.Combine(_ballsDir, ballFile);
+				_ballItems.Add(new BallItem { Filename = ballFilename, IsSelected = App.BallFilename == ballFilename });
+			}
 			DataTemplate it = new DataTemplate(typeof(BallItemCell));
 			ListView listV = new ListView {
 				BackgroundColor = AppStyle.Balls.LIST_BACKGROUND_COLOR,
-				ItemsSource = ballItems,
+				ItemsSource = _ballItems,
 				ItemTemplate = it,
 				RowHeight = AppStyle.Balls.LIST_ITEM_HEIGHT
 			};
 			listV.ItemTapped += (object sender, ItemTappedEventArgs e) => {
+				BallItem selItem = (BallItem)e.Item;
+				if (!selItem.IsSelected) {
+					App.BallFilename = selItem.Filename;
+					foreach (BallItem bi in _ballItems) {
+						if (bi.IsSelected) {
+							bi.IsSelected = false;
+							break;
+						}
+					}
+					selItem.IsSelected = true;
+				}
 				listV.SelectedItem = null;
 			};
 			Content = listV;
 		}
 	}
 
-	public class BallItem
+	public class BallItem : INotifyPropertyChanged
 	{
 		public string Filename { get; set; }
-		public bool IsSelected { get; set; }
+		private bool _isSelected = false;
+		public bool IsSelected {
+			get { return (_isSelected); }
+			set {
+				_isSelected = value;
+				OnPropertyChanged();
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private void OnPropertyChanged([CallerMemberName]string propertyName = null)
+		{
+			if (PropertyChanged != null)
+				PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 	}
 }

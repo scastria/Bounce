@@ -31,7 +31,8 @@ namespace Bounce.Pages
 				}
 			};
 			listV.ItemTapped += (object sender, ItemTappedEventArgs e) => {
-				App.SetDetailPage(((MenuItem)e.Item).Type);
+				MenuItem selItem = (MenuItem)e.Item;
+				App.SetDetailPage(selItem.Type);
 				listV.SelectedItem = null;
 			};
 			Content = listV;
