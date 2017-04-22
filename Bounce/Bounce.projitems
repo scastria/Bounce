@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Controls\BallItemCell.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\FilenameImageValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\CheckImageValueConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pages\BallEditPage.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />

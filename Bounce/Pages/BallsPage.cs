@@ -47,6 +47,8 @@ namespace Bounce.Pages
 						return;
 					}
 					MediaFile pickPhoto = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions { PhotoSize = PhotoSize.Medium });
+					if (pickPhoto == null)
+						return;
 					Console.WriteLine(_ballsDir);
 					Directory.CreateDirectory(_ballsDir);
 					string ballFilename = Path.Combine(_ballsDir, Guid.NewGuid().ToString());
@@ -56,12 +58,16 @@ namespace Bounce.Pages
 						}
 					}
 					_ballItems.Add(new BallItem { Filename = ballFilename });
+					BallEditPage bep = new BallEditPage(ballFilename);
+					bep.BallImageUpdated += HandleBallImageUpdated;
+					await Navigation.PushAsync(bep);
 				}
 			};
 			ToolbarItems.Add(cameraTBI);
 			BackgroundColor = AppStyle.Balls.BACKGROUND_COLOR;
 			_ballItems = new ObservableCollection<BallItem>();
 			_ballItems.Add(new BallItem { IsSelected = string.IsNullOrWhiteSpace(App.BallFilename) });
+			Directory.CreateDirectory(_ballsDir);
 			foreach (string ballFile in Directory.GetFiles(_ballsDir)) {
 				string ballFilename = Path.Combine(_ballsDir, ballFile);
 				_ballItems.Add(new BallItem { Filename = ballFilename, IsSelected = App.BallFilename == ballFilename });
@@ -90,11 +96,30 @@ namespace Bounce.Pages
 			};
 			Content = listV;
 		}
+
+		private void HandleBallImageUpdated(object sender, string ballFilename)
+		{
+			//Find ball item that matches ballFilename
+			foreach (BallItem bi in _ballItems) {
+				if (bi.Filename == ballFilename) {
+					//Force an update by calling filename setter
+					bi.Filename = ballFilename;
+					break;
+				}
+			}
+		}
 	}
 
 	public class BallItem : INotifyPropertyChanged
 	{
-		public string Filename { get; set; }
+		private string _filename = null;
+		public string Filename {
+			get { return (_filename); }
+			set {
+				_filename = value;
+				OnPropertyChanged();
+			}
+		}
 		private bool _isSelected = false;
 		public bool IsSelected {
 			get { return (_isSelected); }
