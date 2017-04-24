@@ -16,6 +16,7 @@ namespace Bounce.Pages
 	{
 		private const string TAKE_PHOTO = "Take a photo";
 		private const string CHOOSE_PHOTO = "Choose a photo";
+		private const string CANCEL = "Cancel";
 		private const string BALLS_DIR = "Balls";
 
 		private App App { get { return ((App)Application.Current); } }
@@ -31,37 +32,39 @@ namespace Bounce.Pages
 				Icon = "camera"
 			};
 			cameraTBI.Clicked += async (object sender, EventArgs e) => {
-				string choice = await DisplayActionSheet("Photo Option", "Cancel", null, TAKE_PHOTO, CHOOSE_PHOTO);
-				if (string.IsNullOrWhiteSpace(choice))
+				string choice = await DisplayActionSheet("Photo Option", CANCEL, null, TAKE_PHOTO, CHOOSE_PHOTO);
+				if ((string.IsNullOrWhiteSpace(choice)) || (choice == CANCEL))
 					return;
 				await Task.Delay(TimeSpan.FromSeconds(0.5));
 				await CrossMedia.Current.Initialize();
+				MediaFile photo = null;
 				if (choice == TAKE_PHOTO) {
 					if (!CrossMedia.Current.IsCameraAvailable || !CrossMedia.Current.IsTakePhotoSupported) {
 						await DisplayAlert("Error", "Cannot access camera", "Close");
 						return;
 					}
+					photo = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions { PhotoSize = PhotoSize.Small });
 				} else {
 					if (!CrossMedia.Current.IsPickPhotoSupported) {
 						await DisplayAlert("Error", "Cannot access photo library", "Close");
 						return;
 					}
-					MediaFile pickPhoto = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions { PhotoSize = PhotoSize.Medium });
-					if (pickPhoto == null)
-						return;
-					Console.WriteLine(_ballsDir);
-					Directory.CreateDirectory(_ballsDir);
-					string ballFilename = Path.Combine(_ballsDir, Guid.NewGuid().ToString());
-					using(Stream pickPhotoS = pickPhoto.GetStream()) {
-						using (FileStream fs = new FileStream(ballFilename, FileMode.CreateNew)) {
-							await pickPhotoS.CopyToAsync(fs);
-						}
-					}
-					_ballItems.Add(new BallItem { Filename = ballFilename });
-					BallEditPage bep = new BallEditPage(ballFilename);
-					bep.BallImageUpdated += HandleBallImageUpdated;
-					await Navigation.PushAsync(bep);
+					photo = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions { PhotoSize = PhotoSize.Small });
 				}
+				if (photo == null)
+					return;
+				Console.WriteLine(_ballsDir);
+				Directory.CreateDirectory(_ballsDir);
+				string ballFilename = Path.Combine(_ballsDir, Guid.NewGuid().ToString());
+				using(Stream pickPhotoS = photo.GetStream()) {
+					using (FileStream fs = new FileStream(ballFilename, FileMode.CreateNew)) {
+						await pickPhotoS.CopyToAsync(fs);
+					}
+				}
+				_ballItems.Add(new BallItem { Filename = ballFilename });
+				BallEditPage bep = new BallEditPage(ballFilename);
+				bep.BallImageUpdated += HandleBallImageUpdated;
+				await Navigation.PushAsync(bep);
 			};
 			ToolbarItems.Add(cameraTBI);
 			BackgroundColor = AppStyle.Balls.BACKGROUND_COLOR;

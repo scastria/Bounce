@@ -1,6 +1,7 @@
 ﻿using System;
 using Bounce.Controls;
 using Bounce.Pages;
+using CocosSharp;
 using Xamarin.Forms;
 
 namespace Bounce
@@ -18,6 +19,7 @@ namespace Bounce
 
 		public App()
 		{
+			CCLog.Logger = Console.WriteLine;
 			_rootPage = new MasterDetailPage {
 				Master = new DarkNavigationPage(new MenuPage()) { Title = "Menu", Icon = "menu" }
 			};
