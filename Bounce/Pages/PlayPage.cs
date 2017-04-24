@@ -47,16 +47,7 @@ namespace Bounce.Pages
 				_nativeGameV.ResolutionPolicy = CCViewResolutionPolicy.ShowAll;
 				_nativeGameV.ContentManager.SearchPaths = new List<string> { "Fonts", "Sounds", "Images", "Animations" };
 				CCScene gameScene = new CCScene(_nativeGameV);
-				byte[] ballData = null;
-				if (!string.IsNullOrWhiteSpace(App.BallFilename)) {
-					using (FileStream fs = new FileStream(App.BallFilename, FileMode.Open)) {
-						using (MemoryStream ms = new MemoryStream()) {
-							await fs.CopyToAsync(ms);
-							ballData = ms.ToArray();
-						}
-					}
-				}
-				gameScene.AddLayer(new Game.GameLayer(ballData,_nativeGameV.DesignResolution.Width, _nativeGameV.DesignResolution.Height));
+				gameScene.AddLayer(new Game.GameLayer(App.BallFilename,_nativeGameV.DesignResolution.Width, _nativeGameV.DesignResolution.Height));
 				_nativeGameV.RunWithScene(gameScene);
 			}
 		}

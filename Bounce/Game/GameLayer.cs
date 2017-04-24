@@ -40,7 +40,7 @@ namespace Bounce.Game
 			}
 		}
 
-		private byte[] _ballData = null;
+		private string _ballFilename = null;
 		private float _gameWidth;
 		private float _gameHeight;
 		private CCPhysicsSprite _ballN = null;
@@ -55,9 +55,9 @@ namespace Bounce.Game
 		private ContactListener _contactListener = null;
 		private bool _stopGameRequested = false;
 
-		public GameLayer(byte[] ballData, float gameWidth, float gameHeight) : base(new CCColor4B(249, 247, 233))
+		public GameLayer(string ballFilename, float gameWidth, float gameHeight) : base(new CCColor4B(249, 247, 233))
 		{
-			_ballData = ballData;
+			_ballFilename = ballFilename;
 			_gameWidth = gameWidth;
 			_gameHeight = gameHeight;
 
@@ -220,10 +220,12 @@ namespace Bounce.Game
 			_contactListener.Ball = physBody;
 
 			CCTexture2D ballTex = null;
-			if (_ballData == null)
+			if (string.IsNullOrWhiteSpace(_ballFilename))
 				ballTex = new CCTexture2D("soccer");
-			else
-				ballTex = new CCTexture2D(_ballData);
+			else {
+				FileStream fs = new FileStream(_ballFilename, FileMode.Open);
+				ballTex = new CCTexture2D(fs);
+			}
 			_ballN = new CCPhysicsSprite(ballTex, physBody) {
 				PositionX = ballCenterX,
 				PositionY = ballCenterY,
