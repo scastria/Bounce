@@ -2,6 +2,9 @@
 using Bounce.Controls;
 using Bounce.Pages;
 using CocosSharp;
+using Microsoft.Azure.Mobile;
+using Microsoft.Azure.Mobile.Analytics;
+using Microsoft.Azure.Mobile.Crashes;
 using Xamarin.Forms;
 
 namespace Bounce
@@ -47,5 +50,14 @@ namespace Bounce
 			_rootPage.Detail = detailNavPage;
 			_rootPage.IsPresented = false;
 		}
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+            MobileCenter.Start("ios=0bbdcbfa-f977-4d30-adb7-38763e20966d;" +
+				   "uwp={Your UWP App secret here};" +
+				   "android=a15c7693-2f2e-4457-a63e-65ccb7b65f29;",
+				   typeof(Analytics), typeof(Crashes));
+        }
 	}
 }
