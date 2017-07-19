@@ -5,11 +5,12 @@ using CocosSharp;
 using Microsoft.Azure.Mobile;
 using Microsoft.Azure.Mobile.Analytics;
 using Microsoft.Azure.Mobile.Crashes;
+using Microsoft.Azure.Mobile.Push;
 using Xamarin.Forms;
 
 namespace Bounce
 {
-	public enum MenuItemType { Play, Balls }
+	public enum MenuItemType { Play, Balls, Crash }
 
 	public class App : Application
 	{
@@ -57,7 +58,7 @@ namespace Bounce
             MobileCenter.Start("ios=0bbdcbfa-f977-4d30-adb7-38763e20966d;" +
 				   "uwp={Your UWP App secret here};" +
 				   "android=a15c7693-2f2e-4457-a63e-65ccb7b65f29;",
-				   typeof(Analytics), typeof(Crashes));
+				   typeof(Analytics), typeof(Crashes), typeof(Push));
         }
 	}
 }

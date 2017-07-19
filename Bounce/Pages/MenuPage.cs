@@ -17,7 +17,8 @@ namespace Bounce.Pages
 			BackgroundColor = AppStyle.Menu.BACKGROUND_COLOR;
 			List<MenuItem> menuItems = new List<MenuItem> {
 				new MenuItem { Type = MenuItemType.Play },
-				new MenuItem { Type = MenuItemType.Balls }
+				new MenuItem { Type = MenuItemType.Balls },
+				new MenuItem { Type = MenuItemType.Crash }
 			};
 			DataTemplate it = new DataTemplate(typeof(TextCell));
 			it.SetBinding(TextCell.TextProperty, "Title");
@@ -32,7 +33,11 @@ namespace Bounce.Pages
 			};
 			listV.ItemTapped += (object sender, ItemTappedEventArgs e) => {
 				MenuItem selItem = (MenuItem)e.Item;
-				App.SetDetailPage(selItem.Type);
+                if(selItem.Type == MenuItemType.Crash) {
+                    string crash = null;
+                    Console.WriteLine(crash.Length);
+                } else
+    				App.SetDetailPage(selItem.Type);
 				listV.SelectedItem = null;
 			};
 			Content = listV;
