@@ -10,7 +10,7 @@ using Xamarin.Forms;
 
 namespace Bounce
 {
-	public enum MenuItemType { Play, Balls }
+	public enum MenuItemType { Play, Balls, Crash }
 
 	public class App : Application
 	{
