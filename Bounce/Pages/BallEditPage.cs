@@ -12,23 +12,14 @@ namespace Bounce.Pages
 
 		private SKCanvasView _canvasV = null;
 		private SKMatrix _m = SKMatrix.MakeIdentity();
-		private SKMatrix _startPanM = SKMatrix.MakeIdentity();
-		private SKMatrix _startPinchM = SKMatrix.MakeIdentity();
-		private Point _startPinchAnchor = Point.Zero;
-		private float _totalPinchScale = 1f;
-		private float _screenScale;
 		private SKBitmap _bitmap = null;
 		private string _ballFilename = null;
 		private bool _doSave = false;
+        private SKPoint _lastPanPt = SKPoint.Empty;
 
-		public BallEditPage(string ballFilename)
+        public BallEditPage(string ballFilename)
 		{
 			_ballFilename = ballFilename;
-#if __ANDROID__
-            _screenScale = ((Android.App.Activity)Forms.Context).Resources.DisplayMetrics.Density;
-#else
-			_screenScale = (float)UIKit.UIScreen.MainScreen.Scale;
-#endif
 			Title = "Ball Edit";
 			ToolbarItem saveTBI = new ToolbarItem {
 				Text = "Save"
@@ -53,89 +44,79 @@ namespace Bounce.Pages
 			_canvasV.GestureRecognizers.Add(pngr);
 		}
 
-		private void HandlePan(object sender, PanUpdatedEventArgs puea)
-		{
-			switch (puea.StatusType) {
-			case GestureStatus.Started:
-				_startPanM = _m;
-				break;
-			case GestureStatus.Running:
-				float canvasTotalX = (float)puea.TotalX * _screenScale;
-				float canvasTotalY = (float)puea.TotalY * _screenScale;
-				SKMatrix canvasTranslation = SKMatrix.MakeTranslation(canvasTotalX, canvasTotalY);
-				SKMatrix.Concat(ref _m, ref canvasTranslation, ref _startPanM);
-				_canvasV.InvalidateSurface();
-				break;
-			default:
-				_startPanM = SKMatrix.MakeIdentity();
-				break;
-			}
-		}
+        private async void HandlePaintCanvas(object sender, SKPaintSurfaceEventArgs e)
+        {
+            SKImageInfo info = e.Info;
+            SKCanvas canvas = e.Surface.Canvas;
+            canvas.Clear();
+            if (_doSave) {
+                using (var hole = new SKPath()) {
+                    hole.AddCircle(info.Width / 2, info.Height / 2, info.Width / 3);
+                    canvas.ClipPath(hole, antialias: true);
+                }
+            }
+            canvas.SetMatrix(_m);
+            //Draw ball image
+            SKSize imgSize = new SKSize(_bitmap.Width, _bitmap.Height);
+            SKRect aspectRect = SKRect.Create(info.Width, info.Height).AspectFit(imgSize);
+            canvas.DrawBitmap(_bitmap, aspectRect);
+            if (!_doSave) {
+                canvas.ResetMatrix();
+                //Draw circle overlay
+                using (var frame = new SKPath())
+                using (var hole = new SKPath()) {
+                    frame.AddRect(info.Rect);
+                    hole.AddCircle(info.Width / 2, info.Height / 2, info.Width / 3);
+                    SKPath frameHole = frame.Op(hole, SKPathOp.Difference);
+                    using (var p = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill, Color = new SKColor(128, 128, 128, 200) }) {
+                        canvas.DrawPath(frameHole, p);
+                    }
+                }
+            } else {
+                SKImage snapI = e.Surface.Snapshot();
+                snapI = snapI.Subset(canvas.DeviceClipBounds);
+                SKData pngImage = snapI.Encode();
+                File.WriteAllBytes(_ballFilename, pngImage.ToArray());
+                await Navigation.PopAsync();
+                OnBallImageUpdated(_ballFilename);
+            }
+        }
 
-		private void HandlePinch(object sender, PinchGestureUpdatedEventArgs puea)
+        private void HandlePan(object sender, PanUpdatedEventArgs e)
 		{
-			Point canvasAnchor = new Point(puea.ScaleOrigin.X * _canvasV.Width * _screenScale,
-										   puea.ScaleOrigin.Y * _canvasV.Height * _screenScale);
-			switch (puea.Status) {
-			case GestureStatus.Started:
-				_startPinchM = _m;
-				_startPinchAnchor = canvasAnchor;
-				_totalPinchScale = 1f;
-				break;
-			case GestureStatus.Running:
-				_totalPinchScale *= (float)puea.Scale;
-				SKMatrix canvasScaling = SKMatrix.MakeScale(_totalPinchScale, _totalPinchScale, (float)_startPinchAnchor.X, (float)_startPinchAnchor.Y);
-				SKMatrix.Concat(ref _m, ref canvasScaling, ref _startPinchM);
-				_canvasV.InvalidateSurface();
-				break;
-			default:
-				_startPinchM = SKMatrix.MakeIdentity();
-				_startPinchAnchor = Point.Zero;
-				_totalPinchScale = 1f;
-				break;
-			}
-		}
+            SKPoint panPt = ToUntransformedCanvasPt((float)e.TotalX, (float)e.TotalY);
+            switch (e.StatusType) {
+            case GestureStatus.Started:
+                _lastPanPt = panPt;
+                break;
+            case GestureStatus.Running:
+                SKPoint deltaTran = panPt - _lastPanPt;
+                _lastPanPt = panPt;
+                SKMatrix deltaM = SKMatrix.MakeTranslation(deltaTran.X, deltaTran.Y);
+                SKMatrix.PostConcat(ref _m, deltaM);
+                _canvasV.InvalidateSurface();
+                break;
+            }
+        }
 
-		private async void HandlePaintCanvas(object sender, SKPaintSurfaceEventArgs e)
+        private void HandlePinch(object sender, PinchGestureUpdatedEventArgs e)
 		{
-			e.Surface.Canvas.Clear();
-			if (_doSave) {
-				using (var hole = new SKPath()) {
-					hole.AddCircle(e.Info.Width / 2, e.Info.Height / 2, e.Info.Width / 3);
-					e.Surface.Canvas.ClipPath(hole, SKClipOperation.Intersect, true);
-				}
-			}
-			e.Surface.Canvas.SetMatrix(_m);
-			//Draw ball image
-			SKSize imgSize = new SKSize(_bitmap.Width, _bitmap.Height);
-			SKRect aspectRect = SKRect.Create(e.Info.Width, e.Info.Height).AspectFit(imgSize);
-			e.Surface.Canvas.DrawBitmap(_bitmap, aspectRect);
-			if (!_doSave) {
-				e.Surface.Canvas.ResetMatrix();
-				//Draw circle overlay
-				using (var frame = new SKPath())
-				using (var hole = new SKPath()) {
-					frame.AddRect(e.Info.Rect);
-					hole.AddCircle(e.Info.Width / 2, e.Info.Height / 2, e.Info.Width / 3);
-					SKPath frameHole = frame.Op(hole, SKPathOp.Difference);
-					using (var paint = new SKPaint()) {
-						paint.IsAntialias = true;
-						paint.Style = SKPaintStyle.Fill;
-						paint.Color = new SKColor(128, 128, 128, 200);
-						e.Surface.Canvas.DrawPath(frameHole, paint);
-					}
-				}
-			} else {
-				SKImage snapI = e.Surface.Snapshot();
-				snapI = snapI.Subset(e.Surface.Canvas.ClipDeviceBounds);
-				SKData pngImage = snapI.Encode();
-				File.WriteAllBytes(_ballFilename, pngImage.ToArray());
-				await Navigation.PopAsync();
-				OnBallImageUpdated(_ballFilename);
-			}
-		}
+            switch (e.Status) {
+            case GestureStatus.Running:
+                SKPoint pivotPt = ToUntransformedCanvasPt((float)(e.ScaleOrigin.X * _canvasV.Width), (float)(e.ScaleOrigin.Y * _canvasV.Height));
+                SKMatrix deltaM = SKMatrix.MakeScale((float)e.Scale, (float)e.Scale, pivotPt.X, pivotPt.Y);
+                SKMatrix.PostConcat(ref _m, deltaM);
+                _canvasV.InvalidateSurface();
+                break;
+            }
+        }
 
-		private void OnBallImageUpdated(string ballFilename)
+        private SKPoint ToUntransformedCanvasPt(float x, float y)
+        {
+            return (new SKPoint(x * _canvasV.CanvasSize.Width / (float)_canvasV.Width, y * _canvasV.CanvasSize.Height / (float)_canvasV.Height));
+        }
+
+        private void OnBallImageUpdated(string ballFilename)
 		{
 			if (BallImageUpdated != null)
 				BallImageUpdated(this, ballFilename);

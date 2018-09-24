@@ -23,11 +23,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Converters\FilenameImageValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\CheckImageValueConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pages\BallEditPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\IImageProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Controls\" />
     <Folder Include="$(MSBuildThisFileDirectory)Pages\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
     <Folder Include="$(MSBuildThisFileDirectory)Converters\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Services\" />
   </ItemGroup>
 </Project>
